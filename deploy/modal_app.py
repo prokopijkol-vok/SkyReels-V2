@@ -90,6 +90,7 @@ def generate_scene(job_id: str, user_id: str, input_path: str, prompt: str, outp
             "--outdir", run_name,
         ]
         subprocess.run(command, cwd=REPO_DIR, check=True)
+        model_volume.commit()
         candidates = list((Path(REPO_DIR) / "result" / run_name).glob("*.mp4"))
         if not candidates:
             raise RuntimeError("SkyReels finished without producing an MP4 file.")
@@ -97,7 +98,7 @@ def generate_scene(job_id: str, user_id: str, input_path: str, prompt: str, outp
 
         final_file = work_dir / "scene-01.mp4"
         subprocess.run(
-            ["ffmpeg", "-y", "-i", str(generated), "-t", "8", "-c", "copy", str(final_file)],
+            ["ffmpeg", "-y", "-i", str(generated), "-t", "8", "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(final_file)],
             check=True,
             capture_output=True,
         )
